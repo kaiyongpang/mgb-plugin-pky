@@ -6,8 +6,6 @@ import org.mybatis.generator.api.Plugin;
 import org.mybatis.generator.api.PluginAdapter;
 import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.api.dom.xml.Document;
-import org.mybatis.generator.logging.Log;
-import org.mybatis.generator.logging.LogFactory;
 import org.mybatis.generator.plugins.enums.LombokEnum;
 import org.mybatis.generator.plugins.interfaze.EnumInterface;
 
@@ -18,7 +16,6 @@ import java.util.stream.Stream;
 
 public class CustomPlugin extends PluginAdapter {
 
-    private static final Log LOG = LogFactory.getLog(CustomPlugin.class);
     private static final String CUSTOM_LOMBOK_PROPERTY = "customLombok";
     private static final String LOMBOK_PACKAGE_PROPERTY = "lombokPackage";
     private static final String ENABLE_SWAGGER_PROPERTY = "enableSwagger";
@@ -62,7 +59,6 @@ public class CustomPlugin extends PluginAdapter {
 
     private void addGetColumnsMethod(Interface interfaze, IntrospectedTable introspectedTable) {
         var returnType = new FullyQualifiedJavaType("UpdateDSL");
-        returnType.addTypeArgument(new FullyQualifiedJavaType("UpdateModel"));
         var parameter = new Parameter(new FullyQualifiedJavaType(introspectedTable.getBaseRecordType()), "record");
         var tableName = getTableField(introspectedTable.getFullyQualifiedTable().getDomainObjectName());
 
@@ -141,9 +137,10 @@ public class CustomPlugin extends PluginAdapter {
     private void addFieldComment(Field field, TopLevelClass topLevelClass, IntrospectedColumn introspectedColumn, IntrospectedTable introspectedTable) {
 
         field.addJavaDocLine("/**"); //$NON-NLS-1$
-        var columnRemarks = introspectedColumn.getRemarks();
         var remarks = new StringBuilder(" * 【 ")
-                .append(null == columnRemarks ? "no mark" : columnRemarks.replaceAll("(\r\n|\n|\r|\")", " "))
+                .append(introspectedColumn.getRemarks()
+                        .map(r -> r.replaceAll("(\r\n|\n|\r|\")", " "))
+                        .orElse("no mark"))
                 .append(" 】");
         field.addJavaDocLine(remarks.toString());
         field.addJavaDocLine(" */");
