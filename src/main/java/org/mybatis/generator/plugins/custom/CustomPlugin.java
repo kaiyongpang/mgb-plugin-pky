@@ -104,12 +104,8 @@ public class CustomPlugin extends PluginAdapter {
         }
         for (var element : collection) {
             var annotations = element.getAnnotations();
-            for (var annotation : annotations) {
-                if (annotation.contains("Generated")) {
-                    annotations.remove(annotation);
-                    break;
-                }
-            }
+            annotations.removeIf(annotation ->
+                    annotation.equals("@Generated") || annotation.startsWith("@Generated("));
         }
     }
 
